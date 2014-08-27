@@ -94,3 +94,17 @@ Content-Type: image/jpeg
 
 ...bytes...
 ```
+
+## Check chunked upload progress
+
+```
+PUT /files/some_url HTTP/1.1
+Content-Length: 0
+Content-Range: bytes */2000000
+```
+
+```
+HTTP/1.1 308 Resume Incomplete
+Content-Length: 0
+Range: 0-42
+```
