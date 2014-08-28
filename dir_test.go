@@ -10,10 +10,10 @@ func TestPrepareDir(t *testing.T) {
 	assert := assert.New(t)
 	root := "dummy/root_storage"
 
-	dm, err := PrepareDir(root, "image", "")
+	dm, err := PrepareDir(root, "image")
 	assert.Nil(err)
 	assert.Equal(root, dm.Root)
 
-	dm, err = PrepareDir(root, "", "/image/2014/2a/q1b12")
+	dm, err = CheckDir(root, "/image/2014/2a/q1b12")
 	assert.Nil(err)
 }

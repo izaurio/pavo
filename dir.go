@@ -16,22 +16,26 @@ type DirManager struct {
 	Path string
 }
 
-// Prepare DirManager given root, mime, path.
-func PrepareDir(root, mime, path string) (*DirManager, error) {
-
+// Prepare DirManager given root, mime.
+func PrepareDir(root, mime string) (*DirManager, error) {
 	dm := NewDirManager(root)
 
-	if path != "" {
-		if m, _ := filepath.Match("/[a-z]*/[0-9]*/[0-9a-z]*/[0-9a-z]*", path); m != true {
-			return nil, errors.New("dir: path does not match the pattern")
-		}
-		dm.Path = path
-	} else {
-		dm.CalcPath(mime)
-		if err := dm.Create(); err != nil {
-			return nil, err
-		}
+	dm.CalcPath(mime)
+	if err := dm.Create(); err != nil {
+		return nil, err
 	}
+
+	return dm, nil
+}
+
+// Check path and return DirManager.
+func CheckDir(root, path string) (*DirManager, error) {
+	dm := NewDirManager(root)
+
+	if m, _ := filepath.Match("/[a-z]*/[0-9]*/[0-9a-z]*/[0-9a-z]*", path); m != true {
+		return nil, errors.New("dir: path does not match the pattern")
+	}
+	dm.Path = path
 
 	return dm, nil
 }
