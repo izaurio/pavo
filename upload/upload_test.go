@@ -29,15 +29,22 @@ func TestUploadMultipart(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/files", &body)
 	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	files, err := SaveFiles(req)
+	assert.Nil(err)
+	t.Logf("files: %#v", files[0])
 }
 
 func TestUploadBinary(t *testing.T) {
-	//assert := assert.New(t)
+	assert := assert.New(t)
 
 	req, _ := http.NewRequest("POST", "/files", nil)
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("X-File", "../dummy/bin-data")
 	req.Header.Set("Content-Disposition", `attachment; filename="basta.png"`)
+
+	_, err := SaveFiles(req)
+	assert.Nil(err)
 }
 
 func TestGetConvertParams(t *testing.T) {
