@@ -1,20 +1,5 @@
 package main
 
-// Original uploaded file.
-type OriginalFile struct {
-	BaseMime string
-	Filepath string
-	Filename string
-}
-
-// Convert params
-type Convert map[string]string
-
-// For range operator return native map.
-func (c *Convert) Map() map[string]string {
-	return map[string]string(*c)
-}
-
 // Attachment contain info about directory, base mime type and all files saved.
 type Attachment struct {
 	BaseMime string
