@@ -34,6 +34,18 @@ func TestUploadMultipart(t *testing.T) {
 
 }
 
+func TestUploadBinary(t *testing.T) {
+	//assert := assert.New(t)
+
+	req, _ := http.NewRequest("POST", "/files", nil)
+	req.Header.Set("Content-Type", "application/octet-stream")
+	req.Header.Set("X-File", "../dummy/bin-data")
+	req.Header.Set("Content-Disposition", `attachment; filename="basta.png"`)
+
+	t.Logf("%#v", req.Header)
+
+}
+
 func writeMPBody(fname string, mw *multipart.Writer) error {
 	fw, _ := mw.CreateFormFile("files[]", filepath.Base(fname))
 	f, err := os.Open(fname)
