@@ -15,12 +15,15 @@ func (c *Convert) Map() map[string]string {
 	return map[string]string(*c)
 }
 
+// Attachment contain info about directory, base mime type and all files saved.
 type Attachment struct {
 	BaseMime string
 	Dir      *DirManager
 	Files    []FileManager
 }
 
+// Function recieve root directory, original file, convertaion parametrs.
+// Return Attachment saved.
 func SaveAttachment(storage string, ofile *OriginalFile, converts *Convert) (*Attachment, error) {
 	dm, err := PrepareDir(storage, ofile.BaseMime)
 	if err != nil {
@@ -34,21 +37,20 @@ func SaveAttachment(storage string, ofile *OriginalFile, converts *Convert) (*At
 		if err != nil {
 			return nil, err
 		}
-		files = append(files, fm)
 
+		attachment.Files = append(attachment.Files, fm)
 	}
-	return files, nil
+
+	return attachment, nil
 }
 
+// Directly save single version and return FileManager.
 func saveVersion(ofile *OriginalFile, dm *DirManager, version string, convert string) (FileManager, error) {
-	fm := GetFileManager(ofile.BaseMime, version)
+	fm := NewFileManager(ofile.BaseMime, version)
+
 	if err := fm.Convert(ofile, convert); err != nil {
 		return nil, err
 	}
 
 	return fm, nil
 }
-
-// ---
-
-// ---

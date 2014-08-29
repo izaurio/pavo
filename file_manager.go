@@ -9,8 +9,8 @@ type FileBaseManager struct {
 	Filename string
 }
 
-// Return file manager for given base mime.
-func GetFileManager(mime_base, version string) FileManager {
+// Return FileManager for given base mime and version.
+func NewFileManager(mime_base, version string) FileManager {
 	switch mime_base {
 	case "image":
 		return &FileImageManager{FileBaseManager: FileBaseManager{Version: version}}

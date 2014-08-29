@@ -10,7 +10,7 @@ func TestSaveAttachment(t *testing.T) {
 	assert := assert.New(t)
 
 	ofile := originalFile()
-	storage = "dummy/root_storage"
+	storage := "dummy/root_storage"
 	converts := &Convert{"origin": "", "thumbnail": "80x80"}
 
 	attachment, err := SaveAttachment(storage, ofile, converts)
