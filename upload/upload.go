@@ -3,11 +3,14 @@ package upload
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 // Original uploaded file.
@@ -29,9 +32,7 @@ func SaveFiles(req *http.Request) ([]*OriginalFile, error) {
 	}
 	defer body.Close()
 
-	// define saver
 	if meta.MediaType == "multipart/form-data" {
-		// fetch list OrirginalFile
 		files, err := SaveFilesFromMultipart(body.Body, meta.Boundary)
 		if err != nil {
 			return nil, err
@@ -40,8 +41,12 @@ func SaveFiles(req *http.Request) ([]*OriginalFile, error) {
 		return files, nil
 	}
 
-	// load single file from binary body
-	return nil, errors.New("Implement load single file")
+	file, err := SaveFileFromOctetStream(body.Body, meta.Filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*OriginalFile{file}, nil
 }
 
 func SaveFilesFromMultipart(body io.Reader, boundary string) ([]*OriginalFile, error) {
@@ -65,11 +70,33 @@ func SaveFilesFromMultipart(body io.Reader, boundary string) ([]*OriginalFile, e
 			original_file.Filename = part.FileName()
 			files = append(files, original_file)
 
-			// identify base mime
+			original_file.BaseMime, err = IdentifyMime(original_file.Filepath)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	return files, nil
+}
+
+func SaveFileFromOctetStream(body io.Reader, filename string) (*OriginalFile, error) {
+	original_file, err := saveTempFile(body)
+	if err != nil {
+		return nil, err
+	}
+
+	if filename == "" {
+		return nil, errors.New("upload: undefined filename")
+	}
+	original_file.Filename = filename
+
+	original_file.BaseMime, err = IdentifyMime(original_file.Filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	return original_file, nil
 }
 
 func saveTempFile(src io.Reader) (*OriginalFile, error) {
@@ -104,4 +131,18 @@ func GetConvertParams(req *http.Request) (map[string]string, error) {
 	}
 
 	return convert, nil
+}
+
+// Get base mime type
+//		$ file --mime-type pic.jpg
+//		pic.jpg: image/jpeg
+func IdentifyMime(file string) (string, error) {
+	out, err := exec.Command("file", "--mime-type", file).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("Identify Mime: file --mime-type %s; err: %s; detail: %s", file, err, string(out))
+	}
+
+	mime := strings.Split(strings.Split(string(out), ": ")[1], "/")[0]
+
+	return mime, nil
 }

@@ -32,7 +32,9 @@ func TestUploadMultipart(t *testing.T) {
 
 	files, err := SaveFiles(req)
 	assert.Nil(err)
-	t.Logf("files: %#v", files[0])
+	assert.Equal("kino.jpg", files[1].Filename)
+	assert.Equal("image", files[1].BaseMime)
+
 }
 
 func TestUploadBinary(t *testing.T) {
@@ -43,8 +45,11 @@ func TestUploadBinary(t *testing.T) {
 	req.Header.Set("X-File", "../dummy/bin-data")
 	req.Header.Set("Content-Disposition", `attachment; filename="basta.png"`)
 
-	_, err := SaveFiles(req)
+	files, err := SaveFiles(req)
 	assert.Nil(err)
+	assert.Equal("basta.png", files[0].Filename)
+	assert.Equal("image", files[0].BaseMime)
+
 }
 
 func TestGetConvertParams(t *testing.T) {
