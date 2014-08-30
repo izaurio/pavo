@@ -13,6 +13,28 @@ import (
 	"strings"
 )
 
+func SaveChunk(req *http.Request, storage string) error {
+	meta, err := ParseMeta(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := NewBody(req.Header.Get("X-File"), req.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	// temp_file = root + "/chunks/" + md5(cookie + filename)
+	// save req.body to temp_file using temp_file.Seek and Range.start
+	// io.CopyN with range.end-range.start+1
+	// if temp_file.size == range.size then
+	// form original_file
+	// else return new range
+
+	return errors.New("implement")
+}
+
 // Original uploaded file.
 type OriginalFile struct {
 	BaseMime string
@@ -20,6 +42,7 @@ type OriginalFile struct {
 	Filename string
 }
 
+// For input Request define algoritm
 func SaveFiles(req *http.Request) ([]*OriginalFile, error) {
 	meta, err := ParseMeta(req)
 	if err != nil {
