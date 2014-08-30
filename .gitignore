@@ -1,1 +1,4 @@
 *.swp
+dummy/root_storage/*
+.DS_Store
+

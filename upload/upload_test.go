@@ -55,8 +55,8 @@ func TestUploadBinary(t *testing.T) {
 
 func TestUploadChunked(t *testing.T) {
 	// Upload file kino.jpg by three chunks
-	//assert := assert.New(t)
-
+	assert := assert.New(t)
+	storage := "../dummy/root_storage"
 	fname := "../dummy/kino.jpg"
 	f, _ := os.Open(fname)
 	defer f.Close()
@@ -65,20 +65,25 @@ func TestUploadChunked(t *testing.T) {
 	// First chunk
 	req := createChunkRequest(f, 0, 24999)
 	req.AddCookie(cookie)
-	t.Logf("req1: %v", req.Header)
-	// Cookie
+	//t.Logf("req1: %v", req.Header)
+	_, err := SaveChunk(req, storage)
+	assert.Nil(err)
 
 	// Second chunk
 	req = createChunkRequest(f, 25000, 49999)
 	req.AddCookie(cookie)
-	t.Logf("req2: %v", req.Header)
-	// Cookie
+	//t.Logf("req2: %v", req.Header)
+	_, err = SaveChunk(req, storage)
+	assert.Nil(err)
 
 	// Last chunk
 	req = createChunkRequest(f, 50000, 52096)
 	req.AddCookie(cookie)
-	t.Logf("req3: %v", req.Header)
-	// Cookie
+	//t.Logf("req3: %v", req.Header)
+	chunk, err := SaveChunk(req, storage)
+	assert.Nil(err)
+	assert.Equal(52097, chunk.Size)
+
 }
 
 func createChunkRequest(f *os.File, start int64, end int64) *http.Request {
@@ -96,6 +101,14 @@ func createChunkRequest(f *os.File, start int64, end int64) *http.Request {
 	req.Header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fi.Size()))
 
 	return req
+}
+
+func TestGetTempFileChunks(t *testing.T) {
+	assert := assert.New(t)
+
+	file, err := GetTempFileChunks("../dummy/root_storage", "abcdef", "kino.jpg")
+	assert.Nil(err)
+	assert.NotNil(file)
 }
 
 func TestGetConvertParams(t *testing.T) {
