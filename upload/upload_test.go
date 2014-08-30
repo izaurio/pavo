@@ -2,6 +2,7 @@ package upload
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -52,6 +53,51 @@ func TestUploadBinary(t *testing.T) {
 
 }
 
+func TestUploadChunked(t *testing.T) {
+	// Upload file kino.jpg by three chunks
+	//assert := assert.New(t)
+
+	fname := "../dummy/kino.jpg"
+	f, _ := os.Open(fname)
+	defer f.Close()
+
+	cookie := &http.Cookie{Name: "pavo", Value: "abcdef"}
+	// First chunk
+	req := createChunkRequest(f, 0, 24999)
+	req.AddCookie(cookie)
+	t.Logf("req1: %v", req.Header)
+	// Cookie
+
+	// Second chunk
+	req = createChunkRequest(f, 25000, 49999)
+	req.AddCookie(cookie)
+	t.Logf("req2: %v", req.Header)
+	// Cookie
+
+	// Last chunk
+	req = createChunkRequest(f, 50000, 52096)
+	req.AddCookie(cookie)
+	t.Logf("req3: %v", req.Header)
+	// Cookie
+}
+
+func createChunkRequest(f *os.File, start int64, end int64) *http.Request {
+	var body bytes.Buffer
+	mw := multipart.NewWriter(&body)
+	fi, _ := f.Stat()
+	fw, _ := mw.CreateFormFile("files[]", fi.Name())
+
+	io.CopyN(fw, f, end-start+1)
+	mw.Close()
+
+	req, _ := http.NewRequest("POST", "/files", &body)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	req.Header.Set("Content-Disposition", `attachment; filename="`+fi.Name()+`"`)
+	req.Header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fi.Size()))
+
+	return req
+}
+
 func TestGetConvertParams(t *testing.T) {
 	assert := assert.New(t)
 	req, _ := http.NewRequest("POST", `/files?converts={"pic":"120x90"}`, nil)
@@ -68,6 +114,7 @@ func writeMPBody(fname string, mw *multipart.Writer) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	_, err = io.Copy(fw, f)
 	if err != nil {

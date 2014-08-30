@@ -66,20 +66,52 @@ Content-Type: image/jpeg
 
 ## Chunked multipart
 
+First request create temporary file
 ```
 POST /files HTTP/1.1
-Content-Length: 10424
-Content-Range: bytes 10240-20479/36431
-Accept: application/json
-Content-Disposition: attachment; filename="pic.jpg"
-Content-Type: multipart/form-data; boundary=----zcXALujB6lFCbaAa
+Content-Length: 25185
+Content-Range: bytes 0-24999/52097
+Content-Disposition: attachment; filename="kino.jpg"
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryAD3u12ABYZTJiIy3
 
-------zcXALujB6lFCbaAa
-Content-Disposition: form-data; name="files[]"; filename="pic.jpg"
+------WebKitFormBoundaryAD3u12ABYZTJiIy3
+Content-Disposition: form-data; name="files[]"; filename="kino.jpg"
 Content-Type: image/jpeg
 
 ...bytes...
-------zcXALujB6lFCbaAa--
+------WebKitFormBoundaryAD3u12ABYZTJiIy3--
+```
+
+Second request write chunk to exists temporary file
+```
+POST /files HTTP/1.1
+Content-Length: 25185
+Content-Range: bytes 25000-49999/52097
+Content-Disposition: attachment; filename="kino.jpg"
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryvbE2anvAQyF3PWZS
+
+------WebKitFormBoundaryvbE2anvAQyF3PWZS
+Content-Disposition: form-data; name="files[]"; filename="kino.jpg"
+Content-Type: image/jpeg
+
+...bytes...
+------WebKitFormBoundaryvbE2anvAQyF3PWZS--
+```
+
+Last request write chunk to exists temporary file, complete upload, create attachment.
+```
+POST /files HTTP/1.1
+Content-Length: 2282
+Content-Range: bytes 50000-52096/52097
+Content-Disposition: attachment; filename="kino.jpg"
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryrHBafxSExXodxlnL
+
+------WebKitFormBoundaryrHBafxSExXodxlnL
+Content-Disposition: form-data; name="files[]"; filename="kino.jpg"
+Content-Type: image/jpeg
+
+...bytes...
+------WebKitFormBoundaryrHBafxSExXodxlnL--
 ```
 
 ## Chunked binary
