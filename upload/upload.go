@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,7 +18,7 @@ import (
 // Error Incomplete returned by uploader when loaded non-last chunk.
 var Incomplete = errors.New("Incomplete")
 
-// Original uploaded file.
+// Structure describes the state of the original file.
 type OriginalFile struct {
 	BaseMime string
 	Filepath string
@@ -25,49 +26,42 @@ type OriginalFile struct {
 	Size     int64
 }
 
+// Downloading files from the received request.
+// The root directory of storage, storage,  used to temporarily store chunks.
+// Returns an array of the original files and error.
+// If you load a portion of the file, chunk, it will be stored in err error Incomplete,
+// and in an array of a single file. File size will fit the current size.
+func Process(req *http.Request, storage string) ([]*OriginalFile, error) {
+	meta, err := ParseMeta(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := NewBody(req.Header.Get("X-File"), req.Body)
+	if err != nil {
+		return nil, err
+	}
+	up := &Uploader{Root: storage, Meta: meta, Body: body}
+
+	files, err := up.SaveFiles()
+	if err == Incomplete {
+		return files, err
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// Upload manager.
 type Uploader struct {
 	Root string
 	Meta *Meta
 	Body *Body
 }
 
-func (up *Uploader) Reader() (io.Reader, string, error) {
-	if up.Meta.MediaType == "multipart/form-data" {
-		up.Body.MR = multipart.NewReader(up.Body.Body, up.Meta.Boundary)
-		for {
-			part, err := up.Body.MR.NextPart()
-			if err != nil {
-				return nil, "", err
-			}
-			if part.FormName() == "files[]" {
-				return part, part.FileName(), nil
-			}
-		}
-	}
-
-	up.Body.Available = false
-
-	return up.Body.Body, up.Meta.Filename, nil
-}
-
-func (up *Uploader) TempFile() (*os.File, error) {
-	if up.Meta.Range == nil {
-		return TempFile()
-	}
-	return TempFileChunks(up.Meta.Range.Start, up.Root, up.Meta.UploadSid, up.Meta.Filename)
-}
-
-func (up *Uploader) Write(temp_file *os.File, body io.Reader) error {
-	var err error
-	if up.Meta.Range == nil {
-		_, err = io.Copy(temp_file, body)
-	} else {
-		chunk_size := up.Meta.Range.End - up.Meta.Range.Start + 1
-		_, err = io.CopyN(temp_file, body, chunk_size)
-	}
-	return err
-}
-
+// Function SaveFiles sequentially loads the original files or chunk's.
 func (up *Uploader) SaveFiles() ([]*OriginalFile, error) {
 	files := make([]*OriginalFile, 0)
 	for {
@@ -91,6 +85,14 @@ func (up *Uploader) SaveFiles() ([]*OriginalFile, error) {
 	return files, nil
 }
 
+// Function loads one or download the original file chunk.
+// Asks for the starting position in the body of the request to read the next file.
+// Asks for a temporary file.
+// Writes data from the request body into a temporary file.
+// Specifies the size of the resulting temporary file.
+// If the query specified header Content-Range,
+// and the size of the resulting file does not match, it returns an error Incomplete.
+// Otherwise, defines the basic mime type, and returns the original file.
 func (up *Uploader) SaveFile() (*OriginalFile, error) {
 	body, filename, err := up.Reader()
 	if err != nil {
@@ -114,14 +116,19 @@ func (up *Uploader) SaveFile() (*OriginalFile, error) {
 
 	ofile := &OriginalFile{Filename: filename, Filepath: temp_file.Name(), Size: fi.Size()}
 
-	if ofile.Size != up.Meta.Range.Size {
+	if up.Meta.Range != nil && ofile.Size != up.Meta.Range.Size {
 		return ofile, Incomplete
+	}
+
+	ofile.BaseMime, err = IdentifyMime(ofile.Filepath)
+	if err != nil {
+		return nil, err
 	}
 
 	return ofile, nil
 }
 
-func TempFile() (*os.File, err) {
+func TempFile() (*os.File, error) {
 	return ioutil.TempFile(os.TempDir(), "pavo")
 }
 
@@ -147,6 +154,48 @@ func TempFileChunks(offset int64, storage, upload_sid, user_filename string) (*o
 	}
 
 	return file, nil
+}
+func (up *Uploader) Reader() (io.Reader, string, error) {
+	if up.Meta.MediaType == "multipart/form-data" {
+		if up.Body.MR == nil {
+			up.Body.MR = multipart.NewReader(up.Body.Body, up.Meta.Boundary)
+		}
+		for {
+			part, err := up.Body.MR.NextPart()
+			if err != nil {
+				return nil, "", err
+			}
+			if part.FormName() == "files[]" {
+				return part, part.FileName(), nil
+			}
+		}
+	}
+
+	if up.Body.Available == false {
+		return nil, "", io.EOF
+	}
+
+	up.Body.Available = false
+
+	return up.Body.Body, up.Meta.Filename, nil
+}
+
+func (up *Uploader) TempFile() (*os.File, error) {
+	if up.Meta.Range == nil {
+		return TempFile()
+	}
+	return TempFileChunks(up.Meta.Range.Start, up.Root, up.Meta.UploadSid, up.Meta.Filename)
+}
+
+func (up *Uploader) Write(temp_file *os.File, body io.Reader) error {
+	var err error
+	if up.Meta.Range == nil {
+		_, err = io.Copy(temp_file, body)
+	} else {
+		chunk_size := up.Meta.Range.End - up.Meta.Range.Start + 1
+		_, err = io.CopyN(temp_file, body, chunk_size)
+	}
+	return err
 }
 
 // Get base mime type
