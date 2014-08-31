@@ -13,6 +13,7 @@ type Meta struct {
 	Boundary  string
 	Range     *Range
 	Filename  string
+	UploadSid string
 }
 
 type Range struct {
@@ -35,6 +36,14 @@ func ParseMeta(req *http.Request) (*Meta, error) {
 
 	if err := meta.parseContentDisposition(req.Header.Get("Content-Disposition")); err != nil {
 		return nil, err
+	}
+
+	cookie_pavo, err := req.Cookie("pavo")
+	if err != nil {
+		return nil, err
+	}
+	if cookie_pavo != nil {
+		meta.UploadSid = cookie_pavo.Value
 	}
 
 	return meta, nil

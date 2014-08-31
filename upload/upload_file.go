@@ -52,17 +52,12 @@ func SaveFilesFromMultipart(body io.Reader, boundary string) ([]*OriginalFile, e
 			return nil, err
 		}
 		if part.FormName() == "files[]" {
-			original_file, err := saveTempFile(part)
+			original_file, err := SaveFileFromOctetStream(part, part.FileName())
 			if err != nil {
 				return nil, err
 			}
-			original_file.Filename = part.FileName()
-			files = append(files, original_file)
 
-			original_file.BaseMime, err = IdentifyMime(original_file.Filepath)
-			if err != nil {
-				return nil, err
-			}
+			files = append(files, original_file)
 		}
 	}
 
