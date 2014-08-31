@@ -128,33 +128,9 @@ func (up *Uploader) SaveFile() (*OriginalFile, error) {
 	return ofile, nil
 }
 
-func TempFile() (*os.File, error) {
-	return ioutil.TempFile(os.TempDir(), "pavo")
-}
-
-func TempFileChunks(offset int64, storage, upload_sid, user_filename string) (*os.File, error) {
-	hasher := md5.New()
-	hasher.Write([]byte(upload_sid + user_filename))
-	filename := hex.EncodeToString(hasher.Sum(nil))
-
-	path := filepath.Join(storage, "chunks")
-
-	err := os.MkdirAll(path, 0755)
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := os.OpenFile(filepath.Join(path, filename), os.O_CREATE|os.O_WRONLY, 0664)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err = file.Seek(offset, 0); err != nil {
-		return nil, err
-	}
-
-	return file, nil
-}
+// Returns the reader to read the file or chunk of request body and the original file name.
+// If the request header Conent-Type is multipart/form-data, returns the next copy part.
+// If all of part read the case of binary loading read the request body, an error is returned io.EOF.
 func (up *Uploader) Reader() (io.Reader, string, error) {
 	if up.Meta.MediaType == "multipart/form-data" {
 		if up.Body.MR == nil {
@@ -180,6 +156,7 @@ func (up *Uploader) Reader() (io.Reader, string, error) {
 	return up.Body.Body, up.Meta.Filename, nil
 }
 
+// Returns a temporary file to download the file or resume chunk.
 func (up *Uploader) TempFile() (*os.File, error) {
 	if up.Meta.Range == nil {
 		return TempFile()
@@ -187,6 +164,41 @@ func (up *Uploader) TempFile() (*os.File, error) {
 	return TempFileChunks(up.Meta.Range.Start, up.Root, up.Meta.UploadSid, up.Meta.Filename)
 }
 
+// Returns the newly created temporary file.
+func TempFile() (*os.File, error) {
+	return ioutil.TempFile(os.TempDir(), "pavo")
+}
+
+// Returns a temporary file to download chunk.
+// To calculate a unique file name used cookie named pavo and the original file name.
+// File located in the directory chunks storage root directory.
+// Before returning the file pointer is shifted by the value of offset,
+// in a situation where the pieces are loaded from the second to the last.
+func TempFileChunks(offset int64, storage, upload_sid, user_filename string) (*os.File, error) {
+	hasher := md5.New()
+	hasher.Write([]byte(upload_sid + user_filename))
+	filename := hex.EncodeToString(hasher.Sum(nil))
+
+	path := filepath.Join(storage, "chunks")
+
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.OpenFile(filepath.Join(path, filename), os.O_CREATE|os.O_WRONLY, 0664)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = file.Seek(offset, 0); err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// The function writes a temporary file value from reader.
 func (up *Uploader) Write(temp_file *os.File, body io.Reader) error {
 	var err error
 	if up.Meta.Range == nil {
