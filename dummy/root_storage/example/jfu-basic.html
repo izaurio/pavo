@@ -76,15 +76,17 @@
 $(function () {
     'use strict';
     // Change this to the location of your server-side upload handler:
-    var host = 'http://localhost:9073/'
-    var url = host+'files';
+    var host = 'http://localhost:9073'
+    var url = host+'/files';
     $('#fileupload').fileupload({
         url: url,
         dataType: 'json',
         maxChunkSize: 100000000,
         done: function (e, data) {
             $.each(data.result.files, function (index, file) {
-                // $('<img/>').attr('src', host+file.versions.thumbnail.url).appendTo('#files')
+                if (file.type == "image") {
+                    $('<img/>').attr('src', host+file.versions.thumbnail.url).appendTo('#files')
+                }
                 $('<p/>').text(file.name).appendTo('#files');
             });
         },
