@@ -24,7 +24,6 @@ func TestUploadBinary(t *testing.T) {
 	rw := httptest.NewRecorder()
 
 	r.ServeHTTP(rw, req)
-	t.Logf("Body: %s", rw.Body.String())
 	assert.Equal(http.StatusCreated, rw.Code)
 
 	//var d map[string]interface{}

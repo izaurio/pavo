@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,18 +14,17 @@ import (
 )
 
 func main() {
-	root_storage := "./"
-	host := "localhost:9073"
+	flag.Parse()
 
 	r := gin.Default()
 	r.Use(CORSMiddleware())
-	r.Use(static.Serve(root_storage))
+	r.Use(static.Serve(*storage))
 
 	r.POST("/files", CreateAttachment)
 
-	log.Printf("Storage place in: %s", root_storage)
-	log.Printf("Start server on %s", host)
-	r.Run(host)
+	log.Printf("Storage place in: %s", *storage)
+	log.Printf("Start server on %s", *host)
+	r.Run(*host)
 
 }
 
@@ -40,17 +40,27 @@ func CreateAttachment(c *gin.Context) {
 	converts["original"] = ""
 	converts["thumbnail"] = "120x90"
 
-	files, err := upload.Process(c.Request, "./")
+	c.Request.AddCookie(&http.Cookie{Name: "pavo", Value: "huj"})
+
+	files, err := upload.Process(c.Request, *storage)
+	if err == upload.Incomplete {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+			"file":   gin.H{"size": files[0].Size},
+		})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "error",
 			"error":  fmt.Sprintf("Upload error: %q", err.Error()),
 		})
+		return
 	}
 
 	data := make([]map[string]interface{}, 0)
 	for _, ofile := range files {
-		attachment, err := attachment.Create("./example", ofile, converts)
+		attachment, err := attachment.Create(*storage, ofile, converts)
 		if err != nil {
 			data = append(data, map[string]interface{}{
 				"name":  ofile.Filename,
@@ -93,7 +103,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			"POST, GET, OPTIONS, PUT, PATCH, DELETE")
 		c.Writer.Header().Set(
 			"Access-Control-Allow-Headers",
-			"Content-Type, Content-Length, Accept-Encoding, Content-Ragne, Content-Disposition, Authorization")
+			"Content-Type, Content-Length, Accept-Encoding, Content-Range, Content-Disposition, Authorization")
 		if c.Request.Method == "OPTIONS" {
 			c.Abort(200)
 			return
