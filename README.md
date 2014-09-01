@@ -2,7 +2,17 @@
 
 Server-side upload service for [jQuery-File-Upload](https://github.com/blueimp/jQuery-File-Upload).
 
+## Usage
+
+Running from the console by using the command:
+```sh
+$ pavo --host=localhost:9078 --storage=/path/to/root/storage
+```
+
+
 ## Install
+
+#### Install golang
 
 [Install](https://golang.org/doc/install) Golang. Set the [GOPATH](http://golang.org/doc/code.html#GOPATH) environment variable. For example for MacOS:
 ```sh
@@ -13,10 +23,14 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 ```
 
-Install application:
+#### Install application:
 ```sh
 go get github.com/kavkaz/pavo
 ```
+
+#### Setup nginx
+
+When used in a production environment it is recommended to use a web server nginx.
 
 ## License
 
