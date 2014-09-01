@@ -7,9 +7,6 @@ Server-side upload service for [jQuery-File-Upload](https://github.com/blueimp/j
 Running from the console by using the command:
 ```sh
 $ pavo --host=localhost:9078 --storage=/path/to/root/storage
-
-2014/09/01 15:08:32 Storage place in: /path/to/root/storage
-2014/09/01 15:08:32 Start server on localhost:9078
 ```
 
 
