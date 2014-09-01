@@ -11,7 +11,7 @@ type Attachment struct {
 
 // Function recieve root directory, original file, convertaion parametrs.
 // Return Attachment saved.
-func CreateAttachment(storage string, ofile *upload.OriginalFile, converts map[string]string) (*Attachment, error) {
+func Create(storage string, ofile *upload.OriginalFile, converts map[string]string) (*Attachment, error) {
 	dm, err := CreateDir(storage, ofile.BaseMime)
 	if err != nil {
 		return nil, err
@@ -51,6 +51,7 @@ func (attachment *Attachment) ToJson() map[string]interface{} {
 	data := make(map[string]interface{})
 	data["type"] = attachment.OriginalFile.BaseMime
 	data["dir"] = attachment.Dir.Path
+	data["name"] = attachment.OriginalFile.Filename
 	versions := make(map[string]interface{})
 	for version, fm := range attachment.Versions {
 		versions[version] = fm.ToJson()
