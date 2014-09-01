@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"code.google.com/p/go-uuid/uuid"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -39,7 +42,17 @@ func CreateAttachment(c *gin.Context) {
 	}
 	converts["original"] = ""
 
-	c.Request.AddCookie(&http.Cookie{Name: "pavo", Value: "huj"})
+	pavo, _ := c.Request.Cookie("pavo")
+	if pavo == nil {
+		pavo = &http.Cookie{
+			Name:    "pavo",
+			Value:   uuid.New(),
+			Expires: time.Now().Add(10 * 356 * 24 * time.Hour),
+			Path:    "/",
+		}
+		c.Request.AddCookie(pavo)
+		http.SetCookie(c.Writer, pavo)
+	}
 
 	files, err := upload.Process(c.Request, *storage)
 	if err == upload.Incomplete {
