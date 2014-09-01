@@ -51,7 +51,6 @@ func CreateAttachment(c *gin.Context) {
 			Expires: time.Now().Add(10 * 356 * 24 * time.Hour),
 			Path:    "/",
 		}
-		log.Printf("Set cookie: %#v", pavo)
 		c.Request.AddCookie(pavo)
 		http.SetCookie(c.Writer, pavo)
 	}

@@ -77,11 +77,12 @@ $(function () {
     'use strict';
     // Change this to the location of your server-side upload handler:
     var host = 'http://localhost:9073'
+    // var host = 'http://pavo.local'
     var url = host+'/files';
     $('#fileupload').fileupload({
         url: url,
         dataType: 'json',
-        maxChunkSize: 100000000,
+        maxChunkSize: 5000000,
         done: function (e, data) {
             $.each(data.result.files, function (index, file) {
                 if (file.type == "image") {

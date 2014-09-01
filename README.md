@@ -9,6 +9,17 @@ Running from the console by using the command:
 $ pavo --host=localhost:9078 --storage=/path/to/root/storage
 ```
 
+## Example
+
+After install run application:
+```sh
+$ pavo --storage=$GOPATH/src/github.com/kavkaz/pavo/dummy/root_storage
+```
+
+Open example page:
+```sh
+open $GOPATH/src/github.com/kavkaz/pavo/dummy/root_storage/example/jfu-basic.html
+```
 
 ## Install
 
@@ -24,13 +35,58 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 #### Install application:
+
+For first install run:
 ```sh
 go get github.com/kavkaz/pavo
 ```
 
+For update:
+```sh
+go get -u github.com/kavkaz/pavo
+```
+
 #### Setup nginx
 
-When used in a production environment it is recommended to use a web server nginx.
+When used in a production environment it is recommended to use a web server nginx. Configure the web server is reduced to specifying a directory for distribution static, location for the files, and optional authentication.
+
+```
+server {
+    listen 80;
+    server_name pavo.local;
+    
+    access_log /usr/local/var/log/nginx/pavo/access.log;
+    error_log /usr/local/var/log/nginx/pavo/error.log notice;
+    
+    location /auth {
+        internal;
+        proxy_pass http://localhost:3000/auth/url/in/your/app;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length 0;
+        client_max_body_size 0;
+    }
+
+    location /files {
+        auth_request /auth;
+    
+        client_body_temp_path     /tmp;
+        client_body_in_file_only  on;
+        client_body_buffer_size   521K;
+        client_max_body_size      10G;
+    
+        proxy_pass_request_headers on;
+        proxy_set_header X-FILE $request_body_file;
+        proxy_pass http://127.0.0.1:9073;
+    }
+    
+    location / {
+        root /Path/To/Root/Of/Storage;
+    }
+}
+```
+
+These settings allow you to save the request body into a temporary file and pass on our application link to the file in the header `X-File`.
 
 ## License
 
