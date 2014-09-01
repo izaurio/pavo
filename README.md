@@ -18,6 +18,10 @@ Install application:
 go get github.com/kavkaz/pavo
 ```
 
+### Production: nginx setup
+
+When used in a production environment it is recommended to use a web server nginx.
+
 ## License
 
 [MIT license](http://www.opensource.org/licenses/MIT). Copyright (c) 2014 Zaur Abasmirzoev.
