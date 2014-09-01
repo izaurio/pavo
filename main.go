@@ -38,7 +38,6 @@ func CreateAttachment(c *gin.Context) {
 		return
 	}
 	converts["original"] = ""
-	converts["thumbnail"] = "120x90"
 
 	c.Request.AddCookie(&http.Cookie{Name: "pavo", Value: "huj"})
 

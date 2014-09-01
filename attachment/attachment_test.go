@@ -10,7 +10,7 @@ import (
 func TestCreateAttachment(t *testing.T) {
 	assert := assert.New(t)
 
-	ofile := originalFile()
+	ofile := originalImageFile()
 	storage := "../dummy/root_storage"
 	converts := map[string]string{"original": "", "thumbnail": "120x80"}
 
@@ -22,10 +22,18 @@ func TestCreateAttachment(t *testing.T) {
 	assert.Equal(data["type"], "image")
 }
 
-func originalFile() *upload.OriginalFile {
+func originalImageFile() *upload.OriginalFile {
 	return &upload.OriginalFile{
 		BaseMime: "image",
 		Filepath: "../dummy/32509211_news_bigpic.jpg",
 		Filename: "32509211_news_bigpic.jpg",
+	}
+}
+
+func originalPdfFile() *upload.OriginalFile {
+	return &upload.OriginalFile{
+		BaseMime: "application",
+		Filepath: "../dummy/Learning-Go-latest.pdf",
+		Filename: "Learning-Go-latest.pdf",
 	}
 }

@@ -24,6 +24,8 @@ func NewFileManager(dm *DirManager, mime_base, version string) FileManager {
 	switch mime_base {
 	case "image":
 		return &FileImageManager{FileBaseManager: fbm}
+	default:
+		return &FileDefaultManager{FileBaseManager: fbm}
 	}
 
 	return nil

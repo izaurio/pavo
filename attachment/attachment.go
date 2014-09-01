@@ -23,6 +23,9 @@ func Create(storage string, ofile *upload.OriginalFile, converts map[string]stri
 		Versions:     make(map[string]FileManager),
 	}
 
+	if ofile.BaseMime == "image" {
+		converts["thumbnail"] = "120x90"
+	}
 	for version, convert_opt := range converts {
 		fm, err := attachment.CreateVersion(version, convert_opt)
 		if err != nil {
