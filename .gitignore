@@ -1,4 +1,5 @@
 *.swp
 dummy/root_storage/*
+!dummy/root_storage/example/
 .DS_Store
 

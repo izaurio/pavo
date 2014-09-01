@@ -44,12 +44,14 @@ func CreateAttachment(c *gin.Context) {
 
 	pavo, _ := c.Request.Cookie("pavo")
 	if pavo == nil {
+
 		pavo = &http.Cookie{
 			Name:    "pavo",
 			Value:   uuid.New(),
 			Expires: time.Now().Add(10 * 356 * 24 * time.Hour),
 			Path:    "/",
 		}
+		log.Printf("Set cookie: %#v", pavo)
 		c.Request.AddCookie(pavo)
 		http.SetCookie(c.Writer, pavo)
 	}
