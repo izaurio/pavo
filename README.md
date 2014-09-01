@@ -15,6 +15,8 @@ $ pavo --host=localhost:9078 --storage=/path/to/root/storage
 
 ## Install
 
+#### Install golang
+
 [Install](https://golang.org/doc/install) Golang. Set the [GOPATH](http://golang.org/doc/code.html#GOPATH) environment variable. For example for MacOS:
 ```sh
 brew install go
@@ -24,12 +26,12 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 ```
 
-Install application:
+#### Install application:
 ```sh
 go get github.com/kavkaz/pavo
 ```
 
-### Setup nginx
+#### Setup nginx
 
 When used in a production environment it is recommended to use a web server nginx.
 
