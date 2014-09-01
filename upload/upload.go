@@ -26,6 +26,10 @@ type OriginalFile struct {
 	Size     int64
 }
 
+func (ofile *OriginalFile) Ext() string {
+	return strings.ToLower(filepath.Ext(ofile.Filename))
+}
+
 // Downloading files from the received request.
 // The root directory of storage, storage,  used to temporarily store chunks.
 // Returns an array of the original files and error.

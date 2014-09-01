@@ -1,41 +1,61 @@
-package main
+package attachment
+
+import "github.com/kavkaz/pavo/upload"
 
 // Attachment contain info about directory, base mime type and all files saved.
 type Attachment struct {
-	BaseMime string
-	Dir      *DirManager
-	Files    []FileManager
+	OriginalFile *upload.OriginalFile
+	Dir          *DirManager
+	Versions     map[string]FileManager
 }
 
 // Function recieve root directory, original file, convertaion parametrs.
 // Return Attachment saved.
-func SaveAttachment(storage string, ofile *OriginalFile, converts *Convert) (*Attachment, error) {
-	dm, err := PrepareDir(storage, ofile.BaseMime)
+func CreateAttachment(storage string, ofile *upload.OriginalFile, converts map[string]string) (*Attachment, error) {
+	dm, err := CreateDir(storage, ofile.BaseMime)
 	if err != nil {
 		return nil, err
 	}
 
-	attachment := &Attachment{BaseMime: ofile.BaseMime, Dir: dm, Files: make([]FileManager, 0)}
+	attachment := &Attachment{
+		OriginalFile: ofile,
+		Dir:          dm,
+		Versions:     make(map[string]FileManager),
+	}
 
-	for version, convert_arg := range converts.Map() {
-		fm, err := saveVersion(ofile, dm, version, convert_arg)
+	for version, convert_opt := range converts {
+		fm, err := attachment.CreateVersion(version, convert_opt)
 		if err != nil {
 			return nil, err
 		}
 
-		attachment.Files = append(attachment.Files, fm)
+		attachment.Versions[version] = fm
 	}
 
 	return attachment, nil
 }
 
 // Directly save single version and return FileManager.
-func saveVersion(ofile *OriginalFile, dm *DirManager, version string, convert string) (FileManager, error) {
-	fm := NewFileManager(ofile.BaseMime, version)
+func (attachment *Attachment) CreateVersion(version string, convert string) (FileManager, error) {
+	fm := NewFileManager(attachment.Dir, attachment.OriginalFile.BaseMime, version)
+	fm.SetFilename(attachment.OriginalFile.Ext())
 
-	if err := fm.Convert(ofile, convert); err != nil {
+	if err := fm.Convert(attachment.OriginalFile.Filepath, convert); err != nil {
 		return nil, err
 	}
 
 	return fm, nil
+}
+
+func (attachment *Attachment) ToJson() map[string]interface{} {
+	data := make(map[string]interface{})
+	data["type"] = attachment.OriginalFile.BaseMime
+	data["dir"] = attachment.Dir.Path
+	versions := make(map[string]interface{})
+	for version, fm := range attachment.Versions {
+		versions[version] = fm.ToJson()
+	}
+	data["versions"] = versions
+
+	return data
 }

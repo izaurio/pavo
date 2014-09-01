@@ -1,4 +1,4 @@
-package main
+package attachment
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ func TestPrepareDir(t *testing.T) {
 	assert := assert.New(t)
 	root := "dummy/root_storage"
 
-	dm, err := PrepareDir(root, "image")
+	dm, err := CreateDir(root, "image")
 	assert.Nil(err)
 	assert.Equal(root, dm.Root)
 

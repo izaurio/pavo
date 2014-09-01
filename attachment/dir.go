@@ -1,4 +1,4 @@
-package main
+package attachment
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ type DirManager struct {
 }
 
 // Prepare DirManager given root, mime.
-func PrepareDir(root, mime string) (*DirManager, error) {
+func CreateDir(root, mime string) (*DirManager, error) {
 	dm := NewDirManager(root)
 
 	dm.CalcPath(mime)
