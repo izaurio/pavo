@@ -16,9 +16,9 @@ After install run application:
 $ pavo --storage=$GOPATH/src/github.com/kavkaz/pavo/dummy/root_storage
 ```
 
-Open example page:
+Open example page in your browser:
 ```sh
-open $GOPATH/src/github.com/kavkaz/pavo/dummy/root_storage/example/jfu-basic.html
+open http://localhost:9073/example/jfu-basic.html
 ```
 
 ## Install
