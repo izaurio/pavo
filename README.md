@@ -1,6 +1,6 @@
 # Pavo
 
-Server-side upload service for [jQuery-File-Upload](https://github.com/blueimp/jQuery-File-Upload).
+Server-side upload service for [jQuery-File-Upload](https://github.com/blueimp/jQuery-File-Upload) written in Golang.
 
 ## Usage
 
