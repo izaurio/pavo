@@ -77,6 +77,8 @@ server {
     
         proxy_pass_request_headers on;
         proxy_set_header X-FILE $request_body_file;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
         proxy_pass http://127.0.0.1:9073;
     }
     
