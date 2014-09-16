@@ -60,10 +60,11 @@ server {
     
     location /auth {
         internal;
-        proxy_pass http://localhost:3000/auth/url/in/your/app;
+        proxy_method GET;
+        proxy_set_header Content-Length "";
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_pass_request_body off;
-        proxy_set_header Content-Length 0;
+        proxy_pass http://localhost:3000/auth/url/in/your/app;
         client_max_body_size 0;
     }
 
@@ -78,7 +79,7 @@ server {
         proxy_pass_request_headers on;
         proxy_set_header X-FILE $request_body_file;
         proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
+        proxy_set_header Content-Length 0;
         proxy_pass http://127.0.0.1:9073;
     }
     
