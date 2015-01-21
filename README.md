@@ -65,6 +65,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_pass_request_body off;
         proxy_pass http://localhost:3000/auth/url/in/your/app;
+        proxy_set_header X-Original-URI $request_uri;
         client_max_body_size 0;
     }
 
