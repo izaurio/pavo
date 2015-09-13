@@ -6,14 +6,14 @@ Server-side upload service for [jQuery-File-Upload](https://github.com/blueimp/j
 
 Running from the console by using the command:
 ```sh
-$ pavo --host=localhost:9078 --storage=/path/to/root/storage
+$ bin/pavo --host=localhost:9078 --storage=/path/to/root/storage
 ```
 
 ## Example
 
-After install run application:
+After build run application:
 ```sh
-$ pavo --storage=$GOPATH/src/github.com/kavkaz/pavo/dummy/root_storage
+$ bin/pavo --storage=dummy/root_storage
 ```
 
 Open example page in your browser:
@@ -33,17 +33,20 @@ mkdir $HOME/go
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 ```
+#### Install a project based build tool
+
+Installing, or upgrading [gb](http://getgb.io) is super simple (assuming you’ve already got Go installed)
+```sh
+go get github.com/constabulary/gb/...
+```
 
 #### Install application:
 
-For first install run:
+Clone a repository and build the project:
 ```sh
-go get github.com/kavkaz/pavo
-```
-
-For update:
-```sh
-go get -u github.com/kavkaz/pavo
+git clone git@github.com:kavkaz/pavo.git
+cd pavo
+gb build
 ```
 
 #### Setup nginx
